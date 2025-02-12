@@ -1,0 +1,58 @@
+services:
+  api: &api
+    build:
+      context: .
+      dockerfile: ./docker/local/api/dockerfile
+    volumes:
+      - .:/app:z
+      - static_volume:/app/staticfiles
+      - media_volume:/app/mediafiles
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.envs/.env.local
+    depends_on:
+      - db
+      - mailpit
+    command: /start.sh
+    networks:
+      - nebeshtgah_nw
+
+  db:
+    build:
+        context: .
+        dockerfile: ./docker/local/db/dockerfile
+    ports:
+        - "5432:5432"
+    volumes:
+        - nebeshtgah_db:/var/lib/db/data
+        - ./backups:/backups
+    env_file:
+        - ./.envs/.env.local
+    networks:
+        - nebeshtgah_nw
+
+  mailpit:
+    image: docker.io/axllent/mailpit:v1.20.3
+    ports:
+        - "8025:8025"
+        - "1025:1025"
+    volumes:
+        - nebeshtgah_mailpit_db:/data
+    environment:
+        MP_MAX_MESSAGES: 5000
+        MP_DATA_FILE: /data/mailpit.db
+        MP_SMTP_AUTH_ACCEPT_ANY: 1
+        MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    networks:
+        - nebeshtgah_nw
+
+networks:
+  nebeshtgah_nw:
+      external: true
+
+volumes:
+  static_volume:
+  media_volume:
+  nebeshtgah_db:
+  nebeshtgah_mailpit_db:
