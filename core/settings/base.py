@@ -5,7 +5,7 @@ from loguru import logger
 from datetime import timedelta, date
 
 
-#from pathlib import Path
+# from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -37,8 +37,8 @@ THIRD_PARTY_APPS = [
     "django_filters",
     "djcelery_email",
     "rest_framework_simplejwt",
-    #"haystack",
-    #"drf_haystack",
+    # "haystack",
+    # "drf_haystack",
 ]
 
 LOCAL_APPS = ["core_apps.common", "core_apps.users", "core_apps.profiles"]
@@ -53,6 +53,11 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+AUTHENTICATION_BACKENDS = [
+    "core_apps.users.backends.EmailOrUsernameModelBackend",  # Custom authentication backend
+    "django.contrib.auth.backends.ModelBackend",  # Default backend
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -113,8 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
+AUTH_USER_MODEL = "core_apps.users.User"
 
 LANGUAGE_CODE = "en-us"
 
