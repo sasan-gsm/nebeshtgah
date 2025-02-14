@@ -118,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-AUTH_USER_MODEL = "core_apps.users.User"
+AUTH_USER_MODEL = "users.User"
 
 LANGUAGE_CODE = "en-us"
 

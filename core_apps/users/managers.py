@@ -2,10 +2,13 @@ from django.contrib.auth.models import BaseUserManager
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from typing import Any
 
 
 class CustomUserManager(BaseUserManager):
-    def _create_user(self, username: str, email: str, password=None, **kwargs) -> str:
+    def _create_user(
+        self, username: str, email: str, password=None, **kwargs: Any
+    ) -> str:
         if not email:
             raise ValueError(_("The Email must be set"))
         if not username:
@@ -23,7 +26,7 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(
-        self, username: str, email: str, password=None, **kwargs
+        self, username: str, email: str, password=None, **kwargs: Any
     ) -> str:
         kwargs.setdefault("is_staff", True)
         kwargs.setdefault("is_superuser", True)
@@ -34,7 +37,7 @@ class CustomUserManager(BaseUserManager):
         if kwargs.get("is_superuser") is not True:
             raise ValueError(_("must be superuser."))
 
-        return self._create_user(self, username, email, password=None, **kwargs)
+        return self._create_user(username, email, password, **kwargs)
 
-    def create_user(self, username: str, email: str, password=None, **kwargs) -> str:
-        return self._create_user(self, username, email, password=None, **kwargs)
+    def create_user(self, username: str, email: str, password, **kwargs: Any) -> str:
+        return self._create_user(username, email, password, **kwargs)
