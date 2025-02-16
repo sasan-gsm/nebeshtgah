@@ -48,6 +48,7 @@ class CustomUserLoginForm(forms.Form):
         )
     )
 
+    # TODO: needs refactoring
     def clean(self):
         cleaned_data = super().clean()
         email_or_username = cleaned_data.get("username_or_email")

@@ -16,6 +16,10 @@ DEBUG = getenv("DEBUG")
 
 SITE_NAME = getenv("SITE_NAME")
 
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
+
 ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 ADMIN_URL = getenv("ADMIN_URL")
