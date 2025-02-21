@@ -9,6 +9,10 @@ User = get_user_model()
 
 
 class Profile(BaseTimeStampModel):
+    class Gender(models.TextChoices):
+        MALE = "male", _("Male")
+        FEMALE = "female", _("Female")
+
     avatar = models.ImageField(
         verbose_name=_("Profile Photo"), default="/profile_default.png"
     )

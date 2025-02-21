@@ -180,16 +180,18 @@ SIMPLE_JWT = {
         "rest_framework_simplejwt.tokens.AccessToken",
     ),  # Token classes
 }
-
+# dj-rest-auth
 REST_AUTH = {
     "REST_USE_JWT": True,
     "JWT_AUTH_COOKIE": "access_token",
     "JWT_AUTH_REFRESH_COOKIE": "refresh_token",
-}
-
-REST_AUTH_SERIALIZERS = {
+    "REGISTER_SERIALIZER": "core_apps.users.serializers.CustomRegisterSerializer",
     "LOGIN_SERIALIZER": "your_app.serializers.CustomLoginSerializer",
 }
+
+# REST_AUTH_SERIALIZERS = {
+#     "LOGIN_SERIALIZER": "your_app.serializers.CustomLoginSerializer",
+# }
 
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"  # Allow both username and email
 ACCOUNT_EMAIL_REQUIRED = True  # Require email for signup

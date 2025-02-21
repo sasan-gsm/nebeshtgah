@@ -17,6 +17,8 @@ celery==5.3.6
 flower==2.0.0
 django-celery-email==3.0.0
 djoser==2.3.1
+django-allauth==65.0.0
+dj-rest-auth==7.0.1
 djangorestframework-simplejwt==5.3.0
 PyJWT==2.10.0
 django-haystack==3.1.1
