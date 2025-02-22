@@ -23,7 +23,7 @@ DJANGO_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.sites",
+    # "django.contrib.sites",
     "django.contrib.humanize",
 ]
 
@@ -42,7 +42,6 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",  # Optional: for social authentication
-    "rest_framework",
     "dj_rest_auth",
     "dj_rest_auth.registration",
     # "haystack",
