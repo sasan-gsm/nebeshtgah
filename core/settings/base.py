@@ -28,7 +28,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    "debug_toolbar",
+    #"debug_toolbar",
     "rest_framework",
     "django_countries",
     "phonenumber_field",
@@ -43,6 +43,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",  # Optional: for social authentication
     "dj_rest_auth",
+    "rest_framework.authtoken",
     "dj_rest_auth.registration",
     # "haystack",
     # "drf_haystack",
@@ -55,16 +56,18 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    #"debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = (
-    "django.contrib.auth.backends.ModelBackend",  # Default authentication
+    "core_apps.users.backends.EmailOrUsernameBackend",  # custom authentication
     "allauth.account.auth_backends.AuthenticationBackend",  # Allows allauth authentication
 )
 
@@ -134,7 +137,7 @@ CELERY_TIMEZONE = "UTC"
 # Django REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",  # Use JWT for authentication
+        'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',  # Use Stateless JWT for authentication
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Require authentication for all endpoints
@@ -206,7 +209,7 @@ ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Expiration for confirmation emails
 
 AUTH_USER_MODEL = "users.User"
 
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "fa-ir"
 
 TIME_ZONE = "UTC"
 

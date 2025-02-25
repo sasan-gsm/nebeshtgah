@@ -18,6 +18,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     created_at = models.DateTimeField(auto_now_add=timezone.now())
     updated_at = models.DateTimeField(auto_now=timezone.now())
+    last_login = models.DateTimeField(_("last login"), blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
