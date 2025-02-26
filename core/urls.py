@@ -4,7 +4,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path(settings.ADMIN_URL, admin.site.urls),
-    #path("accounts/", include("allauth.urls")),  # Allauth URLs
+    # path("accounts/", include("allauth.urls")),  # Allauth URLs
 ]
 
 # if settings.DEBUG:

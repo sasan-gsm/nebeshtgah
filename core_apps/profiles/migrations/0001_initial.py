@@ -7,7 +7,6 @@ import phonenumber_field.modelfields
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,18 +15,52 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Profile',
+            name="Profile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('avatar', models.ImageField(default='/profile_default.png', upload_to='', verbose_name='Profile Photo')),
-                ('phone_number', phonenumber_field.modelfields.PhoneNumberField(blank=True, max_length=12, region=None, verbose_name='Phone Number')),
-                ('followers', models.ManyToManyField(blank=True, related_name='following', to='profiles.profile')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "avatar",
+                    models.ImageField(
+                        default="/profile_default.png",
+                        upload_to="",
+                        verbose_name="Profile Photo",
+                    ),
+                ),
+                (
+                    "phone_number",
+                    phonenumber_field.modelfields.PhoneNumberField(
+                        blank=True,
+                        max_length=12,
+                        region=None,
+                        verbose_name="Phone Number",
+                    ),
+                ),
+                (
+                    "followers",
+                    models.ManyToManyField(
+                        blank=True, related_name="following", to="profiles.profile"
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'profile',
+                "db_table": "profile",
             },
         ),
     ]

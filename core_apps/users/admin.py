@@ -14,18 +14,32 @@ class UserAdmin(BaseUserAdmin):
 
     # Fields for editing users
     fieldsets = (
-            (None, {"fields": ("email", "password")}),
-            ("Personal Info", {"fields": ("username", "first_name", "last_name")}),
-            ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
-        )
+        (None, {"fields": ("email", "password")}),
+        ("Personal Info", {"fields": ("username", "first_name", "last_name")}),
+        (
+            "Permissions",
+            {
+                "fields": (
+                    "is_active",
+                    "is_staff",
+                    "is_superuser",
+                    "groups",
+                    "user_permissions",
+                )
+            },
+        ),
+    )
     readonly_fields = ("created_at", "updated_at", "last_login")  # Show, don’t edit
 
     # Fields for adding users
     add_fieldsets = (
-        (None, {
-            "classes": ("wide",),
-            "fields": ("email", "username", "password1", "password2"),
-        }),
+        (
+            None,
+            {
+                "classes": ("wide",),
+                "fields": ("email", "username", "password1", "password2"),
+            },
+        ),
     )
 
     # Fix password handling

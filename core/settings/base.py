@@ -28,7 +28,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
-    #"debug_toolbar",
+    # "debug_toolbar",
     "rest_framework",
     "django_countries",
     "phonenumber_field",
@@ -63,7 +63,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    #"debug_toolbar.middleware.DebugToolbarMiddleware",
+    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -137,7 +137,7 @@ CELERY_TIMEZONE = "UTC"
 # Django REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        'rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication',  # Use Stateless JWT for authentication
+        "rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",  # Use Stateless JWT for authentication
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Require authentication for all endpoints
