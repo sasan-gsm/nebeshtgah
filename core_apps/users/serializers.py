@@ -4,7 +4,7 @@ from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 from dj_rest_auth.serializers import (
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
@@ -79,7 +79,15 @@ class CustomRegisterSerializer(RegisterSerializer):
 
 
 class CustomLoginSerializer(LoginSerializer):
-    login = serializers.CharField()
+    login = serializers.CharField(
+        required=True, help_text=_("User's login identifier.")
+    )
+    password = serializers.CharField(
+        required=True,
+        write_only=True,
+        style={"input_type": "password"},
+        help_text=_("User's password."),
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         login: str = attrs.get("username")
@@ -100,10 +108,9 @@ class CustomLoginSerializer(LoginSerializer):
                 _('Must include "email" and "password".'), code="authorization"
             )
 
-        refresh = RefreshToken.for_user(user)
+        access_token = AccessToken.for_user(user)
         return {
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "access": str(access_token),
             "user": {
                 "id": user.id,
                 "username": user.username,
