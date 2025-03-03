@@ -148,7 +148,9 @@ REST_FRAMEWORK = {
         "rest_framework.filters.OrderingFilter",  # For ordering results
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",  # Enable pagination
-    "PAGE_SIZE": 10,  # Number of items per page
+    "PAGE_SIZE": 10,
+    "PAGE_SIZE_QUERY_PARAM": "page_size",
+    "MAX_PAGE_SIZE": 100,
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",  # Throttle anonymous users
         "rest_framework.throttling.UserRateThrottle",  # Throttle authenticated users
@@ -166,8 +168,8 @@ SIMPLE_JWT = {
     ),  # Access token lifetime (e.g., 30 minutes)
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # Refresh token lifetime (e.g., 1 day)
     "ROTATE_REFRESH_TOKENS": True,  # Automatically rotate refresh tokens
-    "BLACKLIST_AFTER_ROTATION": True,  # Blacklist old tokens after rotation
-    "UPDATE_LAST_LOGIN": True,  # Update the user's last login time on token refresh
+    "BLACKLIST_AFTER_ROTATION": False,  # No blacklisting
+    "UPDATE_LAST_LOGIN": False,  # Update the user's last login time on token refresh
     "ALGORITHM": "HS256",  # Encryption algorithm
     "SIGNING_KEY": getenv("SECRET_KEY"),  # Use Django's SECRET_KEY for signing
     "VERIFYING_KEY": None,  # No verifying key for HS256
@@ -184,28 +186,23 @@ SIMPLE_JWT = {
 }
 # dj-rest-auth
 REST_AUTH = {
-    "REST_USE_JWT": True,
-    "JWT_AUTH_COOKIE": "access_token",
-    "JWT_AUTH_REFRESH_COOKIE": "refresh_token",
+    "USE_JWT": True,  # Newer syntax (v6.0.0), redundant with above but explicit
+    "JWT_AUTH_COOKIE": None,  # No cookie-based JWT (optional)
+    "JWT_AUTH_REFRESH_COOKIE": None,
     "REGISTER_SERIALIZER": "core_apps.users.serializers.CustomRegisterSerializer",
     "LOGIN_SERIALIZER": "your_app.serializers.CustomLoginSerializer",
+    "PASSWORD_RESET_SERIALIZER": "core_apps.users.serializers.CustomPasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "core_apps.users.serializers.CustomPasswordResetConfirmSerializer",
+    "PASSWORD_CHANGE_SERIALIZER": "core_apps.users.serializers.CustomPasswordChangeSerializer",
+    "USER_DETAILS_SERIALIZER": "core_apps.users.serializers.UserDetailsSerializer",
 }
-
-# REST_AUTH_SERIALIZERS = {
-#     "LOGIN_SERIALIZER": "your_app.serializers.CustomLoginSerializer",
-# }
 
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"  # Allow both username and email
 ACCOUNT_EMAIL_REQUIRED = True  # Require email for signup
 ACCOUNT_UNIQUE_EMAIL = True  # Ensure email is unique
-ACCOUNT_USERNAME_REQUIRED = False  # Make username optional
-ACCOUNT_EMAIL_VERIFICATION = (
-    "optional"  # Email verification settings ('optional', 'mandatory', or 'none')
-)
-# Email verification (optional)
+ACCOUNT_USERNAME_REQUIRED = True  # Make username mandatory
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Require email verification
 ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3  # Expiration for confirmation emails
-
 
 AUTH_USER_MODEL = "users.User"
 

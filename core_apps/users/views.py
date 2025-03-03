@@ -2,8 +2,21 @@ from typing import Any
 from django.urls import reverse
 from rest_framework import generics, status
 from rest_framework.response import Response
+from dj_rest_auth.views import LogoutView, LoginView
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from .serializers import PasswordResetSerializer, PasswordResetConfirmSerializer
+from .signals import update_user_last_login
+
+
+class CustomLoginView(LoginView):
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        user = self.request.user
+        if user.is_authenticated():
+            update_user_last_login.send(
+                sender=self.__class__, instance=user, request=request
+            )
+        return response
 
 
 class PasswordResetView(generics.GenericAPIView):

@@ -1,11 +1,13 @@
 from allauth.account.utils import url_str_to_user_pk
 from allauth.account.forms import ResetPasswordForm, SetPasswordForm
+from allauth.account.adapter import get_adapter
+from allauth.account.utils import setup_user_email
 from dj_rest_auth.registration.serializers import RegisterSerializer
-from dj_rest_auth.serializers import LoginSerializer
+from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from dj_rest_auth.serializers import (
-    PasswordResetSerializer as BasePasswordResetSerializer,
-    PasswordResetConfirmSerializer as BasePasswordResetConfirmSerializer,
+    PasswordResetSerializer,
+    PasswordResetConfirmSerializer,
 )
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
@@ -22,12 +24,9 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "password",
-        )
+        fields = ("username", "email", "password", "first_name", "last_name")
         extra_kwargs = {"password": {"write_only": True}}
+        # fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
 
     def create(self, validated_data):
         # Create a new user with hashed password
@@ -66,6 +65,18 @@ class CustomRegisterSerializer(RegisterSerializer):
             )
         return data
 
+    def save(self, request):
+        adapter = get_adapter()
+        user = adapter.new_user(request)
+        self.cleaned_data = self.get_cleaned_data()
+        user.username = self.cleaned_data["username"]
+        user.email = self.cleaned_data["email"]
+        user.set_password(self.cleaned_data["password1"])
+        user.is_active = True
+        user.save()
+        setup_user_email(request, user, self)
+        return user
+
 
 class CustomLoginSerializer(LoginSerializer):
     login = serializers.CharField()
@@ -101,7 +112,7 @@ class CustomLoginSerializer(LoginSerializer):
         }
 
 
-class PasswordResetSerializer(BasePasswordResetSerializer):
+class CustomPasswordResetSerializer(PasswordResetSerializer):
     email = serializers.EmailField()
 
     def validate_email(self, value: str) -> str:
@@ -124,7 +135,7 @@ class PasswordResetSerializer(BasePasswordResetSerializer):
         send_password_reset_email.delay(email, reset_form.generate_reset_url(request))
 
 
-class PasswordResetConfirmSerializer(BasePasswordResetConfirmSerializer):
+class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     uid: serializers.CharField = serializers.CharField(required=True)
     token: serializers.CharField = serializers.CharField(required=True)
     new_password1: serializers.CharField = serializers.CharField(write_only=True)
@@ -181,3 +192,17 @@ class PasswordResetConfirmSerializer(BasePasswordResetConfirmSerializer):
             form.save()
         else:
             raise serializers.ValidationError(form.errors)
+
+
+class CustomPasswordChangeSerializer(PasswordChangeSerializer):
+    old_password = serializers.CharField()
+    new_password1 = serializers.CharField()
+    new_password2 = serializers.CharField()
+
+    def validate(self, attrs):
+        if attrs["new_password1"] != attrs["new_password2"]:
+            raise ValidationError(_("New passwords do not match."))
+
+        if not self.context["request"].user.check_password(attrs["old_password"]):
+            raise ValidationError(_("Old password is incorrect."))
+        return attrs
