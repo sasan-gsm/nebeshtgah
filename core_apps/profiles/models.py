@@ -20,8 +20,8 @@ class Profile(BaseTimeStampModel):
         verbose_name=_("Phone Number"), max_length=12, blank=True
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    followers = models.ManyToManyField(
-        "self", symmetrical=False, related_name="following", blank=True
+    following = models.ManyToManyField(
+        "self", symmetrical=False, related_name="followers", blank=True
     )
 
     class Meta:
