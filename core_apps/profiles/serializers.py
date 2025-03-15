@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile
+from .models import Profile, Follow
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -11,4 +11,17 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = ("user", "phone_number", "gender", "avatar", "followers_count")
 
     def get_followers_count(self, obj: Profile) -> int:
-        return obj.followers.count()
+        return obj.user.follower.count()
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    follower = serializers.PrimaryKeyRelatedField(read_only=True)
+    followed = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Follow
+        fields = (
+            "follower",
+            "followed",
+        )
+        extra_kwargs = {"created_at": {"read_only": True}}

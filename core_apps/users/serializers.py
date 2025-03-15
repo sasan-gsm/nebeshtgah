@@ -4,11 +4,12 @@ from allauth.account.adapter import get_adapter
 from allauth.account.utils import setup_user_email
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import LoginSerializer, PasswordChangeSerializer
-from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework_simplejwt.tokens import RefreshToken
 from dj_rest_auth.serializers import (
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
 )
+from allauth.account.forms import ResetPasswordKeyForm
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import authenticate
@@ -24,7 +25,7 @@ User = get_user_model()
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("username", "email", "password", "first_name", "last_name")
+        fields = ("id", "username", "email", "password", "first_name", "last_name")
         extra_kwargs = {"password": {"write_only": True}}
         # fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'is_superuser']
 
@@ -108,9 +109,10 @@ class CustomLoginSerializer(LoginSerializer):
                 _('Must include "email" and "password".'), code="authorization"
             )
 
-        access_token = AccessToken.for_user(user)
+        refresh = RefreshToken.for_user(user)
         return {
-            "access": str(access_token),
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
             "user": {
                 "id": user.id,
                 "username": user.username,
@@ -148,6 +150,10 @@ class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     new_password1: serializers.CharField = serializers.CharField(write_only=True)
     new_password2: serializers.CharField = serializers.CharField(write_only=True)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None  # Initialize user attribute
+
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the token, uid, and password match."""
         uid = attrs.get("uid")
@@ -159,11 +165,12 @@ class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
         try:
             user_id = url_str_to_user_pk(uid)
             user = User.objects.get(pk=user_id, is_active=True)
-        except (ValueError, User.DoesNotExist):
-            raise serializers.ValidationError({"uid": "Invalid user ID."})
+        except (ValueError, User.DoesNotExist, TypeError):
+            raise serializers.ValidationError({"uid": "Invalid or inactive user."})
 
-        # Validate token using allauth's internal logic
-        if not self._validate_token(user, token):
+        # Validate the token using Allauth ResetPasswordKeyForm
+        reset_form = ResetPasswordKeyForm(user=user, data={"key": token})
+        if not reset_form.is_valid():
             raise serializers.ValidationError({"token": "Invalid or expired token."})
 
         # Validate passwords
@@ -171,23 +178,12 @@ class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
             raise serializers.ValidationError(
                 {"new_password2": "Passwords do not match."}
             )
-
+        self.user = user
         return attrs
-
-    def _validate_token(self, user: User, token: str) -> bool:
-        """Check if the token is valid for the user."""
-        from allauth.account.adapter import get_adapter
-
-        return (
-            get_adapter().confirm_login_allowed(user)
-            or token == user.generate_reset_token()
-        )  # Simplified; allauth handles this internally
 
     def save(self) -> None:
         """Set the new password and clear the token."""
-        uid = self.validated_data["uid"]
-        user_id = url_str_to_user_pk(uid)
-        user = User.objects.get(pk=user_id)
+        user = self.user
         new_password = self.validated_data["new_password1"]
 
         # Use allauth's SetPasswordForm for consistency

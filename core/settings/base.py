@@ -137,7 +137,7 @@ CELERY_TIMEZONE = "UTC"
 # Django REST Framework settings
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTStatelessUserAuthentication",  # Use Stateless JWT for authentication
+        "rest_framework_simplejwt.authentication.JWTAuthentication",  # Fully stateless
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",  # Require authentication for all endpoints

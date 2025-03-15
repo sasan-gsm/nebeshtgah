@@ -16,8 +16,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, null=False)
     is_superuser = models.BooleanField(default=False, null=False)
 
-    created_at = models.DateTimeField(auto_now_add=timezone.now())
-    updated_at = models.DateTimeField(auto_now=timezone.now())
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     last_login = models.DateTimeField(_("last login"), blank=True, null=True)
 
     USERNAME_FIELD = "email"
@@ -26,7 +26,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
     class Meta:
-        db_table = "users"
+        db_table = "user"
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 

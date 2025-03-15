@@ -1,76 +1,71 @@
 from typing import Any
 from django.urls import reverse
-from rest_framework import generics, status
+from rest_framework import viewsets, status
 from rest_framework.response import Response
-from dj_rest_auth.views import (
-    LogoutView,
-    LoginView,
-    PasswordResetView,
-    PasswordResetConfirmView,
-)
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
-from .serializers import PasswordResetSerializer, PasswordResetConfirmSerializer
+from .serializers import (
+    UserSerializer,
+    CustomLoginSerializer,
+    CustomRegisterSerializer,
+    PasswordResetSerializer,
+    PasswordResetConfirmSerializer,
+)
+from rest_framework.decorators import action
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .signals import update_user_last_login
 from rest_framework.permissions import IsAuthenticated
 from django.utils.translation import gettext_lazy as _
 
 
-class CustomLoginView(LoginView):
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        user = self.request.user
-        update_user_last_login.send(
-            sender=self.__class__, instance=user, request=request
+class UserViewSet(viewsets.GenericViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [AllowAny]
+
+    @action(methods=["POST"], detail=False)
+    def register(self, request):
+        serializer = CustomRegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request)
+        return Response(status=status.HTTP_201_CREATED)
+
+    @action(methods="POST")
+    def login(self, request):
+        serializer = CustomLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Fire signal only if user is authenticated
+        [
+            update_user_last_login(
+                sender="User", instance=request.user, request=request
+            )
+            for _ in [request.user]
+            if getattr(request, "user", None) and request.user.is_authenticated
+        ]
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
+
+    @action(methods="POST")
+    def logout(self, request):
+        return Response(
+            _("Successful, discard token."), status=status.HTTP_205_RESET_CONTENT
         )
-        return response
 
-
-class CustomLogOutView(LogoutView):
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        return Response({"detail": _("Logout Successful")}, status=status.HTTP_200_OK)
-
-
-class CustomPasswordResetView(PasswordResetView):
-    serializer_class = PasswordResetSerializer
-    permission_classes = []  # Public endpoint
-    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-
-    def get(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        """Render the browsable API form for password reset."""
-        serializer = self.get_serializer()
-        return Response(serializer.data)  # Empty form for GET
-
-    def post(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        """Handle password reset request."""
-        serializer = self.get_serializer(data=request.data)
+    @action(methods=["POST"], detail=False)
+    def password_reset(self, request):
+        serializer = PasswordResetSerializer(
+            data=request.data, context={"request": request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {"detail": "Password reset email sent."},
+            {"detail": _("Password reset e-mail has been sent.")},
             status=status.HTTP_200_OK,
-            headers={"Location": request.build_absolute_uri(reverse("password-reset"))},
         )
 
-
-class CustomPasswordResetConfirmView(PasswordResetConfirmView):
-    serializer_class = PasswordResetConfirmSerializer
-    permission_classes = []  # Public endpoint, token validates access
-    renderer_classes = [JSONRenderer, BrowsableAPIRenderer]
-
-    def get(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        """Render the browsable API form for password reset confirmation."""
-        serializer = self.get_serializer()
-        return Response(serializer.data)  # Empty form for GET
-
-    def post(self, request: Any, *args: Any, **kwargs: Any) -> Response:
-        """Handle password reset confirmation."""
-        serializer = self.get_serializer(data=request.data)
+    @action(methods=["POST"], detail=False)
+    def password_reset_confirm(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {"detail": "Password has been reset successfully."},
+            {"detail": _("Password has been reset.")},
             status=status.HTTP_200_OK,
-            headers={"Location": request.build_absolute_uri(reverse("login"))},
         )

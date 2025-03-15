@@ -10,7 +10,7 @@ schema_view = get_schema_view(
     openapi.Info(
         title="Your API",
         default_version="v1",
-        description="API documentation for your Django project",
+        description="Nebeshtgah API documentation",
         terms_of_service="https://www.example.com/terms/",
         contact=openapi.Contact(email="contact@example.com"),
         license=openapi.License(name="MIT License"),
