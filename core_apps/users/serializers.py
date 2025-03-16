@@ -18,6 +18,8 @@ from django.utils.translation import gettext_lazy as _
 from typing import Dict, Any
 from django.contrib.auth import get_user_model
 from .tasks import send_password_reset_email
+from django.db import transaction
+from profiles.models import Profile
 
 User = get_user_model()
 
@@ -33,6 +35,71 @@ class UserSerializer(serializers.ModelSerializer):
         # Create a new user with hashed password
         user = User.objects.create_user(**validated_data)
         return user
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(source="profile.avatar", required=False)
+    phone_number = serializers.CharField(source="profile.phone_number", required=False)
+    gender = serializers.ChoiceField(
+        source="profile.gender", choices=Profile.gender.choices, required=False
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "avatar",
+            "phone_number",
+            "gender",
+        )
+        read_only_fields = ("id", "email")
+
+    # def update(self, instance: User, validated_data: Dict[str, Any]):  # type: ignore
+    #     with transaction.atomic():
+    #         # Update user fields
+    #         [
+    #             setattr(instance, attr, value)
+    #             for attr, value in validated_data.items()
+    #             if attr in {field.name for field in User._meta.get_fields()}
+    #         ]
+    #         # Update profile fields
+    #         profile = instance.profile
+    #         [
+    #             setattr(profile, attr, value)
+    #             for attr, value in validated_data.items()
+    #             if attr in {field.name for field in Profile._meta.get_fields()}
+    #         ]
+    #         profile.save()
+    #         instance.save()
+    #         return instance
+
+
+def update(self, instance: User, validated_data: Dict[str, Any]):  # type: ignore
+    with transaction.atomic():
+        list(
+            map(
+                lambda kv: setattr(instance, *kv),
+                filter(
+                    lambda kv: kv[0] in {f.name for f in User._meta.get_fields()},
+                    validated_data.items(),
+                ),
+            )
+        )
+        list(
+            map(
+                lambda kv: setattr(instance.profile, *kv),
+                filter(
+                    lambda kv: kv[0] in {f.name for f in Profile._meta.get_fields()},
+                    validated_data.items(),
+                ),
+            )
+        )
+        instance.profile.save(), instance.save()
+        return instance
 
 
 class CustomRegisterSerializer(RegisterSerializer):

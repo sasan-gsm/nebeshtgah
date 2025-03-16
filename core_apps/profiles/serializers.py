@@ -1,5 +1,9 @@
 from rest_framework import serializers
 from .models import Profile, Follow
+from django.contrib.auth import get_user_model
+from typing import Dict, Any
+
+User = get_user_model()
 
 
 class ProfileSerializer(serializers.ModelSerializer):
