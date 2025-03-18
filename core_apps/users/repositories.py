@@ -1,6 +1,7 @@
 from .models import User
+from profiles.models import Follow
 from django.core.exceptions import ObjectDoesNotExist
-from typing import Any, Optional, Protocol
+from typing import Any, Optional, List, Protocol
 from django.db import transaction
 from loguru import logger
 
@@ -14,6 +15,12 @@ class UserRepositoryProtocol(Protocol):
 
     def delete_user(self, id: int) -> bool: ...
 
+    def list_user(self, **filters: Any) -> dict[Optional[list], bool]: ...
+
+    def get_user_with_profile(user_id: int) -> Optional[User]: ...
+
+    def get_user_with_followers(user_id: int) -> Optional[User]: ...
+
 
 class UserRepository:
     def create_user(self, **kwargs) -> User:
@@ -22,6 +29,12 @@ class UserRepository:
     def get_by_id(self, id: int) -> Optional[User]:
         try:
             return User.objects.get(id=id)
+        except ObjectDoesNotExist:
+            return None
+
+    def get_all_users(self):
+        try:
+            return User.objects.all()
         except ObjectDoesNotExist:
             return None
 
@@ -48,3 +61,11 @@ class UserRepository:
         except Exception as e:
             logger.error(e)
             return False
+
+    # Select related for reducing queries
+    def get_user_with_profile(user_id: int) -> Optional[User]:
+        return User.objects.select_related("profile").filter(id=user_id).first()
+
+    # Prefetch related for many-to-many relationships
+    def get_user_with_followers(user_id: int) -> Optional[User]:
+        return User.objects.prefetch_related("follow").filter(id=user_id).first()

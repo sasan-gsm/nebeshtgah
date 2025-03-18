@@ -1,10 +1,9 @@
-from typing import Any
-from django.urls import reverse
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.renderers import BrowsableAPIRenderer, JSONRenderer
 from .serializers import (
     UserSerializer,
+    UserProfileSerializer,
     CustomLoginSerializer,
     CustomRegisterSerializer,
     PasswordResetSerializer,
@@ -15,11 +14,32 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .signals import update_user_last_login
 from rest_framework.permissions import IsAuthenticated
 from django.utils.translation import gettext_lazy as _
+from .repositories import UserRepository
+from .permissions import IsOwnerOrReadOnly
 
 
 class UserViewSet(viewsets.GenericViewSet):
     serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
+    repository = UserRepository
+
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return self.repository.get_all_users()
+        return self.repository.get_by_id(id=self.request.user.id)
+
+    def get_permissions(self):
+        if action in ("register", "login", "password_reset", "password_reset_confirm"):
+            return [AllowAny]
+        return [IsAuthenticated]
+
+    def get_serializer(self, *args, **kwargs):
+        return {
+            "register": CustomRegisterSerializer,
+            "login": CustomLoginSerializer,
+            "password_reset": PasswordResetSerializer,
+            "password_reset_confirm": PasswordResetConfirmSerializer,
+        }.get(self.action, UserProfileSerializer)
 
     @action(methods=["POST"], detail=False)
     def register(self, request):
