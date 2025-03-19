@@ -29,7 +29,9 @@ class FollowRepositoryProtocol(Protocol):
     def follow(self, follower: User, followed: User) -> Tuple[bool, Optional(str)]: ...  # type: ignore
 
     def unfollow(
-        self, follower: User, followed: User
+        self,
+        follower: User,  # type: ignore
+        followed: User,  # type: ignore
     ) -> Tuple[bool, Optional(str)]: ...  # type: ignore
 
 
