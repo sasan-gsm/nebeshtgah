@@ -95,3 +95,42 @@ class ArticleListSerializer(serializers.Serializer):
 
     def get_tags(self, obj: Article):
         return list(map(lambda tag: tag.tag, obj.tagged_items.all()))
+
+
+class ArticleDetailSerializer(serializers.ModelSerializer):
+    tags = serializers.SerializerMethodField(read_only=True)
+    authors = serializers.SerializerMethodField(read_only=True)
+    comments = serializers.SerializerMethodField(read_only=True)
+    comments_likes = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Article
+        fields = (
+            "id",
+            "title",
+            "body",
+            "tags",
+            "authors",
+            "updated_at",
+            "status",
+            "created_at",
+            "comments",
+            "like_count",
+            "comments_likes",
+            "view_count",
+        )
+
+    def get_authors(self, obj: Article):
+        return list(map(lambda author: author.user.full_name, obj.authors.all()))
+
+    def get_tags(self, obj: Article):
+        return list(map(lambda tag: tag.tag, obj.tagged_items.all()))
+
+    def get_comments(self, obj: Article) -> List[Dict[str, Any]]:
+        from core_apps.comments.serializers import CommentSerializer
+
+        comments = obj.comments.all()
+        return CommentSerializer(comments, many=True).data
+
+    def get_comments_likes(self, obj: Comment):
+        return sum(comment.like_count for comment in obj.comments.all())
