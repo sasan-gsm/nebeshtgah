@@ -58,25 +58,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "email")
 
-    # def update(self, instance: User, validated_data: Dict[str, Any]):  # type: ignore
-    #     with transaction.atomic():
-    #         # Update user fields
-    #         [
-    #             setattr(instance, attr, value)
-    #             for attr, value in validated_data.items()
-    #             if attr in {field.name for field in User._meta.get_fields()}
-    #         ]
-    #         # Update profile fields
-    #         profile = instance.profile
-    #         [
-    #             setattr(profile, attr, value)
-    #             for attr, value in validated_data.items()
-    #             if attr in {field.name for field in Profile._meta.get_fields()}
-    #         ]
-    #         profile.save()
-    #         instance.save()
-    #         return instance
-
 
 def update(self, instance: User, validated_data: Dict[str, Any]):  # type: ignore
     with transaction.atomic():

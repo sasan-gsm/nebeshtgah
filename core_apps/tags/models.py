@@ -18,7 +18,7 @@ class Tag(models.Model):
         return self.tag
 
 
-class TagedItem(models.Model):
+class TaggedItem(models.Model):
     article = models.ForeignKey(
         Article, on_delete=models.CASCADE, related_name="tagged_items"
     )

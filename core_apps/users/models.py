@@ -30,6 +30,10 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = _("User")
         verbose_name_plural = _("Users")
 
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
     def get_username_or_email(self):
         return self.email if "@" in self.username else self.username
 

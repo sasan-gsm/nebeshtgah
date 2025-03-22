@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class Like(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     ContentType = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey("ContentType", "object_id")
@@ -18,4 +18,4 @@ class Like(models.Model):
         db_table = "like"
         verbose_name = _("Like")
         verbose_name_plural = _("Likes")
-        unique_together = ["article", "user"]
+        unique_together = ["ContentType", "object_id", "user"]

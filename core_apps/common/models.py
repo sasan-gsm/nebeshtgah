@@ -21,11 +21,11 @@ class CommentableMixin(models.Model):
     class Meta:
         abstract = True
 
-        def add_comment(self, user: User, title: str, body: str, parent=None):
-            return Comment.objects.create(
-                user=user,
-                title=title,
-                body=body,
-                parent=parent,
-                content_object=self,
-            )
+    def add_comment(self, user: User, title: str, body: str, parent=None):
+        return Comment.objects.create(
+            user=user,
+            title=title,
+            body=body,
+            parent=parent,
+            content_object=self,
+        )

@@ -21,6 +21,9 @@ class Article(models.Model, CommentableMixin):
         editable=True,
     )
     body = models.TextField(verbose_name=_("Article Body"), blank=True)
+    authors = models.ManyToManyField(
+        User, through="Author", related_name="authored_articles"
+    )
     status = models.CharField(
         max_length=10,
         choices=Status.choices,
@@ -31,9 +34,7 @@ class Article(models.Model, CommentableMixin):
     comments = GenericRelation(Comment)
     view_count = models.PositiveIntegerField(default=0)
     like_count = models.PositiveIntegerField(default=0)
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="articles", null=True
-    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -46,12 +47,15 @@ class Article(models.Model, CommentableMixin):
     def increment_view_count(self) -> None:
         from django.db.models import F
 
-        self.view_count = F("view_count") + 1
-        self.save()
+        Article.objects.filter(id=self.id).update(view_count=F("view_count") + 1)
         self.refresh_from_db()
 
     def get_like_count(self):
-        return self.like_count.count()
+        from django.contrib.contenttypes.models import ContentType
+        from core_apps.reactions.models import Like
+
+        content_type = ContentType.objects.get_for_model(self)
+        return Like.objects.filter(content_type=content_type, object_id=self.id).count()
 
     def __str__(self) -> str:
         return self.title
@@ -64,7 +68,7 @@ class Author(models.Model):
     article = models.ForeignKey(
         Article,
         on_delete=models.CASCADE,
-        related_name="author",
+        related_name="authors",
         verbose_name=_("Article"),
     )
 
