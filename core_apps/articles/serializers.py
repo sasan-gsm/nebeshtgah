@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from core_apps.tags.models import Tag
+from core_apps.comments.models import Comment
 from .models import Article, Author
 from django.contrib.auth import get_user_model
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 User = get_user_model()
 
@@ -51,7 +52,7 @@ class ArticleUpdateSerializer(serializers.Serializer):
             "author_usernames",
         )
 
-    def get_authors(self, obj: Article):
+    def get_authors(self, obj: Article) -> List[str]:
         return list(map(lambda author: author.user.full_name, obj.authors.all()))
 
     def update(self, instance: Article, validated_data):
@@ -94,39 +95,3 @@ class ArticleListSerializer(serializers.Serializer):
 
     def get_tags(self, obj: Article):
         return list(map(lambda tag: tag.tag, obj.tagged_items.all()))
-
-
-class ArticleDetailSerializer(serializers.ModelSerializer):
-    tags = serializers.SerializerMethodField(read_only=True)
-    authors = serializers.SerializerMethodField(read_only=True)
-    comments = serializers.SerializerMethodField(read_only=True)
-    comments_likes = serializers.SerializerMethodField(read_only=True)
-
-    class Meta:
-        model = Article
-        fields = (
-            "id",
-            "title",
-            "body",
-            "tags",
-            "authors",
-            "updated_at",
-            "status",
-            "created_at",
-            "comments",
-            "like_count",
-            "comments_likes",
-            "view_count",
-        )
-
-    def get_authors(self, obj: Article):
-        return list(map(lambda author: author.user.full_name, obj.authors.all()))
-
-    def get_tags(self, obj: Article):
-        return list(map(lambda tag: tag.tag, obj.tagged_items.all()))
-
-    def get_comments(self, obj: Article):
-        return list(map(lambda comment: comment.comment, obj.comments.all()))
-
-    def get_comments_likes(self, obj: Article):
-        return list(map(lambda like: comment.comment, obj.comments.all()))
