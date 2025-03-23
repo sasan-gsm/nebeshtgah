@@ -1,8 +1,7 @@
 from django.db import DatabaseError
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Protocol
 from django.contrib.auth import get_user_model
 from .models import Profile, Follow
-from typing import Protocol
 from loguru import logger
 
 User = get_user_model()
